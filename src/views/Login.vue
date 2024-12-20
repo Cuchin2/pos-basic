@@ -8,23 +8,23 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <h2 class="mt-4 text-2xl font-bold text-gray-900">Welcome Back</h2>
-                <p class="mt-2 text-sm text-gray-500">Sign in to continue</p>
+                <h2 class="mt-4 text-2xl font-bold text-gray-900">Bienvenido de nuevo</h2>
+                <p class="mt-2 text-sm text-gray-500">Inicia sesión para continuar</p>
             </div>
 
             <!-- Login Form -->
             <form @submit.prevent="handleLogin" class="space-y-5">
                 <div class="floating-input">
-                    <input id="email" v-model="email" type="email" required placeholder=" "
-                        class="mt-1 block w-full px-3 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-900">
-                    <label for="email" class="floating-label">Email</label>
+                    <input id="email" v-model="email" type="email" required placeholder=" " :class="['mt-1 block w-full px-3 border rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-900',
+                        { 'border-red-500': emailError }]">
+                    <label for="email" class="floating-label">Correo electrónico</label>
                 </div>
 
                 <div class="floating-input">
                     <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" required
-                        placeholder=" "
-                        class="mt-1 block w-full px-3 bg-gray-50 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-900">
-                    <label for="password" class="floating-label">Password</label>
+                        placeholder=" " :class="['mt-1 block w-full px-3 border rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-900',
+                            { 'border-red-500': passwordError }]">
+                    <label for="password" class="floating-label">Contraseña</label>
                     <div @click="togglePassword" class="eye-icon text-gray-400">
                         <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
@@ -46,20 +46,20 @@
                         <input id="remember" v-model="remember" type="checkbox"
                             class="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded">
                         <label for="remember" class="ml-2 block text-sm text-gray-600">
-                            Remember me
+                            Recordarme
                         </label>
                     </div>
 
                     <a href="https://example.com/forgot-password"
                         class="text-sm font-medium text-blue-500 hover:text-blue-600">
-                        Forgot password?
+                        ¿Olvidaste tu contraseña?
                     </a>
                 </div>
 
                 <button type="submit" :disabled="isLoading"
                     class="btn-primary w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
                     <span v-if="isLoading">
-                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
+                        <svg class="animate-spin mx-auto h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
                             </circle>
@@ -67,18 +67,17 @@
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
-                        Signing in...
                     </span>
-                    <span v-else>Sign in</span>
+                    <span v-else>Iniciar sesión</span>
                 </button>
             </form>
 
             <!-- Register Link -->
             <div class="text-center">
                 <p class="text-sm text-gray-500">
-                    Don't have an account?
+                    ¿No tienes una cuenta?
                     <a href="https://example.com/register" class="font-medium text-blue-500 hover:text-blue-600">
-                        Create one now
+                        Créala ahora
                     </a>
                 </p>
             </div>
@@ -104,61 +103,61 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 
 // Define types
-interface LoginData {
-    email: string
-    password: string
-    remember: boolean
+interface LoginError {
+    email?: boolean;
+    password?: boolean;
+    message?: string;
 }
 
-const email = ref<string>('')
-const password = ref<string>('')
-const remember = ref<boolean>(false)
-const isLoading = ref<boolean>(false)
-const errorMessage = ref<string>('')
-const showPassword = ref<boolean>(false)
+const email = ref('');
+const password = ref('');
+const remember = ref(false);
+const isLoading = ref(false);
+const errorMessage = ref<string>(''); // Type it as string directly
+const showPassword = ref(false);
 
-const togglePassword = (): void => {
-    showPassword.value = !showPassword.value
-}
+const errors = reactive<LoginError>({}); // Use a reactive object for errors
 
-const handleLogin = async (): Promise<void> => {
-    isLoading.value = true
-    errorMessage.value = ''
+const togglePassword = () => {
+    showPassword.value = !showPassword.value;
+};
+
+const handleLogin = async () => {
+    isLoading.value = true;
+    errorMessage.value = '';
+    errors.email = false;
+    errors.password = false;
 
     try {
-        // Simulate API call delay
-        await new Promise<void>((resolve) => setTimeout(resolve, 2000))
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-        const loginData: LoginData = {
+        console.log('Login attempt:', {
             email: email.value,
             password: password.value,
             remember: remember.value,
+        });
+
+        if (email.value !== 'demo@example.com') {
+            errors.email = true;
+            throw new Error('El correo electrónico ingresado no está registrado');
         }
 
-        console.log('Login attempt:', loginData)
-
-        // Mock authentication logic
-        if (loginData.email !== 'demo@example.com' || loginData.password !== 'password') {
-            throw new Error('Invalid email or password')
+        if (password.value !== 'password') {
+            errors.password = true;
+            throw new Error('La contraseña ingresada es incorrecta');
         }
 
-        // Redirect on success
-        window.location.href = 'https://example.com/dashboard'
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            errorMessage.value = error.message
-            console.error('Login failed:', error)
-        } else {
-            errorMessage.value = 'An unknown error occurred'
-            console.error('Unknown error:', error)
-        }
+        window.location.href = '/dashboard';
+    } catch (error) {
+        errorMessage.value = error.message;
+        console.error('Login failed:', error);
     } finally {
-        isLoading.value = false
+        isLoading.value = false;
     }
-}
+};
 </script>
 
 
@@ -190,11 +189,14 @@ const handleLogin = async (): Promise<void> => {
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
     color: #6B7280;
+    background: #ffffff;
+    padding: 0 4px;
 }
 
 .floating-input input:focus~.floating-label,
 .floating-input input:not(:placeholder-shown)~.floating-label {
-    transform: translateY(-200%) scale(0.85);
+    transform: translateY(-50%) scale(0.85);
+    top: 0;
     color: #3B82F6;
 }
 

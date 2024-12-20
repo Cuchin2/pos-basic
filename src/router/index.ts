@@ -1,23 +1,12 @@
 // src/router/index.ts
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import ShopLayout from '@/layouts/ShopLayout.vue'
+
 import LoginLayout from '@/layouts/LoginLayout.vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 
 const routes: Array<RouteRecordRaw> = [
-  {
-    path: '/',
-    component: ShopLayout,
-    children:[
-      {
-        path:'',
-        name:'tienda',
-        component: () => import('@/views/Shop.vue')
-      },
-    ]
-  },
         {
-        path: '/login',
+        path: '/',
         component: LoginLayout,
         children:[
           {
