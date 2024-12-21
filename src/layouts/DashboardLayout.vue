@@ -270,7 +270,7 @@
                                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
                                 </div>
-                                <span class="text-sm text-gray-700">John Doe</span>
+                                <span class="text-sm text-gray-700">{{user?.email}}</span>
                                 <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -284,8 +284,8 @@
                                     class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">Your Profile</a>
                                 <a href="https://example.com/settings"
                                     class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">Settings</a>
-                                <a href="https://example.com/logout"
-                                    class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100">Sign out</a>
+                                <a  @click="logout"
+                                    class="block px-4 py-2 text-xs text-gray-700 hover:bg-gray-100 cursor-pointer">Cerrar sesión</a>
                             </div>
                         </div>
                     </div>
@@ -297,9 +297,9 @@
 </template>
 
 <script setup lang="ts">
-import { RouterView } from 'vue-router';
-import { ref, reactive } from 'vue';
-
+import { RouterView,useRouter } from 'vue-router';
+import { ref, computed, onMounted,reactive } from 'vue';
+import { useAuthStore } from '@/stores/authStore';
 // Tipos
 type MenuKeys = 'dashboard' | 'analytics' | 'users' | 'settings';
 
@@ -369,6 +369,29 @@ window.addEventListener('click', (e: MouseEvent) => {
     }
 });
 
+
+
+
+// Stores y router
+const authStore = useAuthStore();
+const router = useRouter();
+
+// Computed para obtener el usuario del store
+const user = computed(() => authStore.user);
+
+// Método para cerrar sesión
+const logout = () => {
+  authStore.logout();
+  router.push({ name: 'login' });
+};
+
+// Verifica si hay un usuario autenticado al montar el componente
+onMounted(() => {
+    console.log(authStore.token)
+  if (!authStore.token) {
+    router.push({ name: 'login' });
+  }
+});
 </script>
 
 <style>

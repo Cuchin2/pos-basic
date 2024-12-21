@@ -1,69 +1,63 @@
-import { defineStore } from 'pinia';
+import { defineStore, Pinia } from 'pinia';
+import { Router } from "vue-router";
 
 interface User {
   email: string;
-  // Otros datos del usuario si los tienes
-}
-
-interface AuthState {
-  user: User | null;
-  isLoggedIn: boolean;
-  isLoading: boolean;
-  error: string | null;
 }
 
 export const useAuthStore = defineStore('auth', {
-  state: (): AuthState => ({
-    user: null,
-    isLoggedIn: false,
-    isLoading: false,
-    error: null,
+  state: () => ({
+    user: null as User | null,
+    token: null as string | null,
+    loginError: null as string | null,
   }),
+
   actions: {
-    async login(email: string, password: string) {
-      this.isLoading = true;
-      this.error = null;
-
+    async login(email: string, password: string, remember: boolean) {
       try {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulación de petición
-
-        if (email !== 'demo@example.com') {
-          throw new Error('Correo electrónico incorrecto.');
+        // Reemplazar con la lógica real de login
+        if (email === 'demo@example.com' && password === 'password') {
+          this.user = { email };
+          this.token = 'mock-token';
+          if (remember) localStorage.setItem('authToken', this.token);
+          this.loginError = null;
+          return true;
+        } else {
+            if(email === 'demo@example.com') { this.loginError= 'Contraseña incorrecta' }
+            if(password === 'password') { this.loginError= 'Correo no válido' }
+          throw new Error('Invalid credentials');
         }
-
-        if (password !== 'password') {
-          throw new Error('Contraseña incorrecta.');
-        }
-
-        this.user = { email }; // Almacena los datos del usuario
-        this.isLoggedIn = true;
-        localStorage.setItem('user', JSON.stringify(this.user)); // Persistir en localStorage
-      } catch (error: any) {
-        this.error = error.message;
-      } finally {
-        this.isLoading = false;
+      } catch (error) {
+        console.error('Login error:', error);
+        return false;
       }
     },
+
     logout() {
       this.user = null;
-      this.isLoggedIn = false;
-      localStorage.removeItem('user');
-      // Redirigir al login si es necesario:
-       window.location.href = '/'; // Ajusta la ruta a tu página de login
+      this.token = null;
+      localStorage.removeItem('authToken');
+      this.loginError = null;
     },
-    checkAuthOnLoad(){
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          this.user = JSON.parse(storedUser);
-          this.isLoggedIn = true;
-          console.log('hola')
-        } catch (error) {
-          console.error("Error parsing user from localStorage", error);
-          localStorage.removeItem('user'); // Limpiar localStorage si hay un error
-          window.location.href = '/';
-        }
+
+    autoLogin() {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        this.token = token;
+        this.user = { email: 'demo@example.com' }; // Ajusta según tu lógica
       }
-    }
+    },
   },
+
+  // Persistencia (opcional)
+  persist: true
 });
+
+// Verifica el estado de autenticación al cargar la página
+export const setupAuthState = async (router: Router, pinia: Pinia) => {
+  const authStore = useAuthStore(pinia);
+  await authStore.autoLogin(); // Ejecutar autoLogin antes de la verificación
+  if (!authStore.token && router.currentRoute.value.meta.requiresAuth) {
+    router.push({ name: 'Login' });
+  }
+};

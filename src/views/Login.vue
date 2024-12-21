@@ -57,7 +57,7 @@
                 </div>
 
                 <button type="submit" :disabled="isLoading"
-                    class="btn-primary w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="btn-primary w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed" >
                     <span v-if="isLoading">
                         <svg class="animate-spin mx-auto h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
@@ -103,60 +103,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
 
-// Define types
-interface LoginError {
-    email?: boolean;
-    password?: boolean;
-    message?: string;
-}
+const authStore = useAuthStore();
+const router = useRouter();
 
 const email = ref('');
 const password = ref('');
 const remember = ref(false);
 const isLoading = ref(false);
-const errorMessage = ref<string>(''); // Type it as string directly
+const errorMessage = ref<string>('');
 const showPassword = ref(false);
-
-const errors = reactive<LoginError>({}); // Use a reactive object for errors
-
+const emailError = ref(false);
+const passwordError = ref(false);
 const togglePassword = () => {
-    showPassword.value = !showPassword.value;
+  showPassword.value = !showPassword.value;
 };
 
 const handleLogin = async () => {
-    isLoading.value = true;
-    errorMessage.value = '';
-    errors.email = false;
-    errors.password = false;
-
-    try {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        console.log('Login attempt:', {
-            email: email.value,
-            password: password.value,
-            remember: remember.value,
-        });
-
-        if (email.value !== 'demo@example.com') {
-            errors.email = true;
-            throw new Error('El correo electrónico ingresado no está registrado');
-        }
-
-        if (password.value !== 'password') {
-            errors.password = true;
-            throw new Error('La contraseña ingresada es incorrecta');
-        }
-
-        window.location.href = '/dashboard';
-    } catch (error) {
-        errorMessage.value = error.message;
-        console.error('Login failed:', error);
-    } finally {
-        isLoading.value = false;
+  isLoading.value = true;
+  errorMessage.value = '';
+ // Temporizador de 1 segundos
+ await new Promise(resolve => setTimeout(resolve, 1000)); // Espera 1 segundos
+  try {
+    const result = await authStore.login(email.value, password.value, remember.value);
+    console.log('Resultado del login:', result);
+    if (result) {
+        router.push({ name: 'dashboard' });
+    } else {
+        errorMessage.value= authStore.loginError || ''
     }
+  } catch (error) {
+    console.log('Error al iniciar sesión:', error);
+    errorMessage.value = (error as Error).message;
+  } finally {
+    isLoading.value = false;
+    
+  }
+
 };
 </script>
 
